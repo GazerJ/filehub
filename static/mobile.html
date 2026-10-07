@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>上传文件 · 文件中转站</title>
+<link rel="icon" href="/static/favicon.svg">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="mpage" data-page="mobile">
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 16V4"/><path d="M7.5 8.5 12 4l4.5 4.5"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16"/>
+        </svg>
+      </span>
+      <div>
+        <h1>文件中转站</h1>
+        <p>手机上选择文件上传，文件保留 7 天</p>
+      </div>
+    </div>
+    <div class="chips" id="chips"></div>
+  </header>
+
+  <section class="mhero">
+    <h2>上传文件</h2>
+    <p>可以一次选多个：照片、视频、微信里的文件都支持。</p>
+    <button class="btn btn-primary btn-lg" id="pickBtn" type="button">选择文件上传</button>
+    <input type="file" id="fileInput" multiple hidden>
+    <button class="btn btn-lg" id="cameraBtn" type="button">拍照 / 录像后上传</button>
+    <input type="file" id="cameraInput" accept="image/*,video/*" capture="environment" hidden>
+    <section class="queue" id="queue" hidden aria-live="polite"></section>
+  </section>
+
+  <section class="card" style="margin-top:16px">
+    <div class="list-head">
+      <div>
+        <h2 class="card-title">中转站里的文件</h2>
+        <p class="card-sub" id="listSummary">加载中…</p>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="refreshBtn" type="button">刷新</button>
+    </div>
+    <ul class="filelist" id="filelist"></ul>
+    <p class="empty" id="empty">还没有文件，先从上面上传吧。</p>
+  </section>
+</div>
+
+<div class="mbar">
+  <label class="check"><input type="checkbox" id="selectAll"><span>全选</span></label>
+  <span class="selinfo" id="selInfo">未选择</span>
+  <button class="btn" id="zipBtn" type="button" disabled>打包下载</button>
+  <button class="btn btn-danger" id="delBtn" type="button" disabled>删除</button>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

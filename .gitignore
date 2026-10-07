@@ -1,0 +1,10 @@
+# 运行时数据：上传的文件本体、索引、pid、日志都不入库
+data/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# 测试产物与日志
+tests/shots/
+*.log

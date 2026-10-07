@@ -1,0 +1,22 @@
+const { chromium } = require('playwright-core');
+(async () => {
+  const b = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-gpu'] });
+  const p = await b.newPage({ viewport: { width: 1280, height: 820 } });
+  const errs = [];
+  p.on('pageerror', (e) => errs.push(e.message));
+  await p.goto('https://file.gaoxiao.asia/', { waitUntil: 'networkidle', timeout: 30000 });
+  await p.waitForFunction(() => { const i = document.getElementById('qrImg'); return i && i.complete && i.naturalWidth > 0; }, { timeout: 15000 }).catch(() => {});
+  console.log('公网页二维码指向:', await p.textContent('#qrUrl'));
+  console.log('二维码图 src   :', await p.getAttribute('#qrImg', 'src'));
+  console.log('提示语         :', await p.textContent('#qrState'));
+  console.log('JS 报错        :', errs.length ? errs.join(' ; ') : '无');
+  await p.screenshot({ path: '/home/gazer/filehub/tests/shots/public-desktop.png', fullPage: true });
+  const m = await b.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await m.goto('https://file.gaoxiao.asia/m', { waitUntil: 'networkidle', timeout: 30000 });
+  await m.setInputFiles('#fileInput', ['/home/gazer/pub-test.txt']).catch((e) => console.log('手机页选择文件失败', e.message));
+  await m.waitForTimeout(2500);
+  const names = await m.$$eval('#filelist .fname-text', (e) => e.map((x) => x.textContent));
+  console.log('手机页通过公网域名上传后列表:', names.join(' | ') || '(空)');
+  await m.screenshot({ path: '/home/gazer/filehub/tests/shots/public-mobile.png', fullPage: true });
+  await b.close();
+})();
