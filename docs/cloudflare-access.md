@@ -38,6 +38,25 @@ python3 tests/bench/cf_access_bypass.py            # 幂等执行：延 session 
 python3 tests/bench/cf_access_fix_policies.py      # 给已建应用补 bypass 策略（幂等）
 ~~~
 
+**整个关掉某个域名的 Access**（两步都要先看 dry-run）：
+
+~~~bash
+cd ~/filehub
+# A. 保留应用、策略改 bypass（推荐，一条命令可回退）
+python3 tests/bench/cf_access_off.py --domain softmatter.gaoxiao.asia --mode bypass --dry-run
+python3 tests/bench/cf_access_off.py --domain softmatter.gaoxiao.asia --mode bypass
+
+# B. 彻底删除应用（连同该域名下的 /path 子应用）
+python3 tests/bench/cf_access_off.py --domain softmatter.gaoxiao.asia --mode delete --dry-run
+python3 tests/bench/cf_access_off.py --domain softmatter.gaoxiao.asia --mode delete
+
+# 回退 A：把策略 decision 改回 allow 即可；回退 B：用 cf-access-setup.py 重建
+python3 ~/git/Coder/ssl-auto/cf-access-setup.py --domain softmatter.gaoxiao.asia --email jianggaoxiao@qq.com --team gaoxiao-dsh
+~~~
+
+关闭后务必确认源站自身有鉴权：code-server 是 [[auth: password]]（容器 myCoderV2 的
+[[/home/coder/.config/code-server/config.yaml]]），别用弱密码——公网会有机器人扫登录接口。
+
 删掉某一个 bypass 应用（例如不想要 code-server 的）：
 
 ~~~bash
