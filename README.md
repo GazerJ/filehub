@@ -109,7 +109,11 @@ NODE_PATH=/home/gazer/.theme-debug/node_modules node tests/ui_test.js   # 真实
 ## 注意事项
 
 - **没有登录鉴权**：同一局域网内知道地址的人都能上传、下载、删除。只适合临时中转，不要放涉密或敏感资料，用完记得删除。
-- 想让手机在**外网**也能扫码上传，可以给它挂一个 Cloudflare 隧道域名。这台机器上已有 cloudflared 和 *.gaoxiao.asia 的隧道配置，加一条 ingress 指向 http://127.0.0.1:8788 即可（需要能重启 cloudflared 的权限）。挂公网前建议至少叠一层 Cloudflare Access 邮箱验证，或给服务加访问口令。
+- **外网访问已经配好**：Cloudflare 隧道（容器 `cf-tunnel`，命名隧道 gaoxiao）里加了一条 ingress
+  `file.gaoxiao.asia` → `http://127.0.0.1:8788`，所以手机用 4G/5G 也能扫码上传：
+  https://file.gaoxiao.asia （配置在 `~/.cloudflared/config-docker.yml`，改完执行 `docker restart cf-tunnel`）。
+  注意两点：① Cloudflare 免费版**单个请求体上限 100 MB**，超过 100 MB 的文件走公网会失败，走局域网不受影响；
+  ② 公网域名**同样没有鉴权**，任何拿到链接的人都能上传/下载/删除。想收紧的话，最省事的是叠一层 Cloudflare Access 邮箱验证码。
 - 手机扫码打不开时：确认手机连的是同一个 Wi-Fi（不是 4G/5G），再确认主机防火墙放行了 8788 端口。
 - 关掉终端不会停服务（start.sh 用了 setsid + nohup）；机器重启后需要重新 ./start.sh，或者自己加一条 @reboot 的 crontab。
 - 备份 / 迁移只需要整个 data/ 目录：index.json 与 blobs/ 里的文件一一对应。
