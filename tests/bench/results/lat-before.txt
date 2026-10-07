@@ -1,0 +1,28 @@
+===== 1. 到 CF 边缘的 RTT / 抖动 / 丢包（50 包）=====
+--- 1.1.1.1 ping statistics ---
+50 packets transmitted, 50 received, 0% packet loss, time 9833ms
+rtt min/avg/max/mdev = 31.978/34.745/50.140/2.732 ms
+===== 2. 隧道小请求延迟分布（code-server 的体感来源）=====
+--- file.gaoxiao.asia/healthz，20 次 ---
+min 143 ms | p50 162 ms | p90 177 ms | max 180 ms | 抖动(max-min) 37 ms
+===== 3. TLS/HTTP2 握手分解（一次完整请求各阶段耗时）=====
+DNS 0.000773s | TCP 0.027420s | TLS 0.083057s | 首字节 0.151917s | 总计 0.152026s
+HTTP/2 复用后第二次: TCP 0.027466s | TLS 0.081209s | 首字节 0.153154s
+===== 4. code-server 源站本机响应 =====
+LISTEN 0      4096         0.0.0.0:17777      0.0.0.0:*          
+LISTEN 0      4096            [::]:17777         [::]:*          
+本机 code-server: TCP 0.000087s TLS 0.003072s 首字节 0.003915s HTTP 302
+===== 5. 同一个域名解析到哪些 CF 节点（客户端会就近选，可能选的不是香港）=====
+file.gaoxiao.asia -> 104.21.26.4 172.67.134.248 
+softmatter.gaoxiao.asia -> 104.21.26.4 172.67.134.248 
+dsh.gaoxiao.asia -> 104.21.26.4 172.67.134.248 
+===== 6. 隧道当前协议与连接数 =====
+3:protocol: http2
+507
+location=hkg09 protocol=http2
+location=hkg13 protocol=http2
+location=hkg01 protocol=http2
+location=hkg08 protocol=http2
+===== 7. 本机是否跑着 clash/代理（浏览器可能被它代理，路径被拉长）=====
+LISTEN 0      4096               *:7890             *:*                                     
+LISTEN 0      4096               *:7891             *:*                                     
