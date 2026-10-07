@@ -246,6 +246,17 @@
   }
 
   /* ---------- 上传 ---------- */
+  // Cloudflare 免费版限制单个请求体 100 MB：走公网域名时超限会被边缘节点直接拒绝（413）
+  var CF_LIMIT = 100 * 1024 * 1024;
+  var PUBLIC_LIMIT_HINT = '文件超过 100 MB：通过公网域名上传时受 Cloudflare 免费版限制，请改用局域网地址（同一 Wi-Fi）上传。';
+
+  function isPrivateHost() {
+    var h = location.hostname;
+    return h === 'localhost' || h === '127.0.0.1' || h === '::1' ||
+      /^10\./.test(h) || /^192\.168\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h) ||
+      /^169\.254\./.test(h);
+  }
+
   function uploadOne(file, onProgress) {
     return new Promise(function (resolve, reject) {
       var xhr = new XMLHttpRequest();
@@ -258,8 +269,9 @@
       xhr.onload = function () {
         var data = {};
         try { data = JSON.parse(xhr.responseText); } catch (e) { data = {}; }
-        if (xhr.status >= 200 && xhr.status < 300 && data.ok) resolve(data.file);
-        else reject(new Error(data.error || ('上传失败 HTTP ' + xhr.status)));
+        if (xhr.status >= 200 && xhr.status < 300 && data.ok) return resolve(data.file);
+        if (xhr.status === 413) return reject(new Error(data.error || PUBLIC_LIMIT_HINT));
+        reject(new Error(data.error || ('上传失败 HTTP ' + xhr.status)));
       };
       xhr.onerror = function () { reject(new Error('网络中断，上传失败')); };
       xhr.ontimeout = function () { reject(new Error('上传超时')); };
@@ -319,6 +331,14 @@
   function enqueueUploads(files) {
     var list = Array.prototype.slice.call(files || []).filter(function (f) { return f && f.name; });
     if (!list.length) return;
+    if (!isPrivateHost()) {
+      var tooBig = list.filter(function (f) { return f.size > CF_LIMIT; });
+      if (tooBig.length) {
+        list = list.filter(function (f) { return f.size <= CF_LIMIT; });
+        toast('已跳过 ' + tooBig.length + ' 个超过 100 MB 的文件。' + PUBLIC_LIMIT_HINT, true);
+        if (!list.length) return;
+      }
+    }
     var running = 0, idx = 0, pending = list.length;
     var CONC = 2;
 

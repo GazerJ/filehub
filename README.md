@@ -112,7 +112,7 @@ NODE_PATH=/home/gazer/.theme-debug/node_modules node tests/ui_test.js   # 真实
 - **外网访问已经配好**：Cloudflare 隧道（容器 `cf-tunnel`，命名隧道 gaoxiao）里加了一条 ingress
   `file.gaoxiao.asia` → `http://127.0.0.1:8788`，所以手机用 4G/5G 也能扫码上传：
   https://file.gaoxiao.asia （配置在 `~/.cloudflared/config-docker.yml`，改完执行 `docker restart cf-tunnel`）。
-  注意两点：① Cloudflare 免费版**单个请求体上限 100 MB**，超过 100 MB 的文件走公网会失败，走局域网不受影响；
+  注意两点：① Cloudflare 免费版**单个请求体上限 100 MB**，超过 100 MB 的文件走公网会失败（前端会提前识别并跳过，提示改用局域网），走局域网不受影响；
   ② 公网域名**同样没有鉴权**，任何拿到链接的人都能上传/下载/删除。想收紧的话，最省事的是叠一层 Cloudflare Access 邮箱验证码。
 - 手机扫码打不开时：确认手机连的是同一个 Wi-Fi（不是 4G/5G），再确认主机防火墙放行了 8788 端口。
 - 关掉终端不会停服务（start.sh 用了 setsid + nohup）；机器重启后需要重新 ./start.sh，或者自己加一条 @reboot 的 crontab。
