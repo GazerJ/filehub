@@ -9,7 +9,7 @@
 | 应用 domain | 作用 | session | 策略 |
 | --- | --- | --- | --- |
 | `dsh.gaoxiao.asia` | DSH Web GUI 主入口 | **720h（30 天）** | allow-owners → `jianggaoxiao@qq.com` |
-| `softmatter.gaoxiao.asia` | code-server | **720h（30 天）** | allow-owners → `jianggaoxiao@qq.com` |
+| `softmatter.gaoxiao.asia` | code-server | **720h（30 天）** | **bypass（2026-10-07 起 Access 已关闭）** |
 | `dsh.gaoxiao.asia/assets` | 前端 JS/CSS 包 | 24h | **bypass**（everyone） |
 | `dsh.gaoxiao.asia/plugins` | 客户端插件 bundle | 24h | **bypass**（everyone） |
 | `dsh.gaoxiao.asia/favicon.svg`、`dsh.gaoxiao.asia/manifest.webmanifest` | 图标 / PWA 清单 | 24h | **bypass**（everyone） |
@@ -18,6 +18,18 @@
 
 原理：Access 应用可以带路径（`host/path`），**匹配时按最长路径优先**。给静态前缀单独建一个
 `decision=bypass` 的应用，这些请求就跳过 Access，而同一域名下的其他路径仍由主应用保护。
+
+### code-server 的 Access 已关闭（2026-10-07）
+
+`softmatter.gaoxiao.asia` 的主策略由 `allow` 改成 `bypass`（应用保留、未删除），
+所以现在**唯一的门是 code-server 自己的密码**（容器 `myCoderV2`，`auth: password`）。
+
+- 验证：`curl -s -o /dev/null -w '%{http_code} %{redirect_url}\n' https://softmatter.gaoxiao.asia/`
+  → 期望 **302 → https://softmatter.gaoxiao.asia/login**（不再是 `*.cloudflareaccess.com`）
+- 恢复保护：`python3 tests/bench/cf_access_list.py` 找到软 softmatter 应用与策略 id，
+  把该策略 `PUT` 回去、`decision` 改回 `allow`（或重跑 `cf-access-setup.py` 归位）
+- 该域名下的 3 个 `/path` bypass 子应用现在没有实际作用，留着不影响，想清理用
+  `cf_access_off.py --mode delete`（会连主应用一起删，慎用）
 
 ## 绝对不要 bypass 的路径
 

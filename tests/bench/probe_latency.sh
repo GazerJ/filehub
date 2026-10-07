@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # 复用同一条连接连发 N 个小请求，测隧道交互延迟（贴近浏览器的真实行为）
-# 用法: probe_latency.sh <输出文件> [请求数]
+# 用法: probe_latency.sh <输出文件> [请求数] [URL]
 set -u
 OUT="${1:-/home/gazer/probe.txt}"
 N="${2:-30}"
-URL="https://file.gaoxiao.asia/healthz"
+URL="${3:-https://file.gaoxiao.asia/healthz}"
 CFG=/tmp/probe_curl.cfg
 
 python3 - "${CFG}" "${N}" "${URL}" <<'PY'
