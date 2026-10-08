@@ -3,7 +3,7 @@
 # 用法： nohup bash path_monitor.sh > /dev/null 2>&1 &
 set -u
 OUT="${OUT:-/home/gazer/filehub/tests/bench/results/path-monitor.csv}"
-INTERVAL="${INTERVAL:-300}"
+INTERVAL="${INTERVAL:-600}"
 PROBE=/home/gazer/filehub/tests/bench/probe_latency.sh
 
 [ -f "$OUT" ] || echo "time,cf_rtt_ms,ali_rtt_ms,google_rtt_ms,cf_loss_pct,tunnel_p50_ms,aliyun_Bps" > "$OUT"
@@ -19,8 +19,8 @@ while true; do
   rm -f /tmp/_pm.txt
   bash "$PROBE" /tmp/_pm.txt 12 https://file.gaoxiao.asia/healthz > /dev/null 2>&1
   tp=$(tail -1 /tmp/_pm.txt 2>/dev/null | sed -E 's/.*p50 ([0-9]+).*/\1/')
-  # 只拉 3MB 区间，避免监控本身吃掉带宽
-  sp=$(curl -s -o /dev/null -m 15 -r 0-3000000 -w '%{speed_download}' https://mirrors.aliyun.com/ubuntu/ls-lR.gz 2>/dev/null)
+  # 只拉 1MB 区间，避免监控本身吃掉带宽（10 分钟一次 ≈ 每天 150MB）
+  sp=$(curl -s -o /dev/null -m 15 -r 0-1000000 -w '%{speed_download}' https://mirrors.aliyun.com/ubuntu/ls-lR.gz 2>/dev/null)
   echo "$(date '+%Y-%m-%d %H:%M'),${cf:-},${al:-},${gg:-},${ls:-},${tp:-},${sp:-}" >> "$OUT"
   sleep "$INTERVAL"
 done
